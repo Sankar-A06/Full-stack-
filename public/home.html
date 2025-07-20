@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🌏 AniWorld</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1e1e2f, #2e2e4d);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+    .container {
+      width: 90%;
+      max-width: 600px;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 30px;
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 0 20px rgba(255, 64, 129, 0.4);
+      text-align: center;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    h1 {
+      color: #ff4081;
+      margin-bottom: 20px;
+      font-size: 2.5em;
+    }
+
+    input {
+      width: 80%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: none;
+      font-size: 16px;
+      outline: none;
+      background: #fff;
+      color: #333;
+    }
+
+    button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 10px;
+      background-color: #ff4081;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #e91e63;
+      transform: scale(1.05);
+    }
+
+    .anime-card {
+      margin-top: 25px;
+      padding: 20px;
+      border-radius: 15px;
+      background-color: rgba(255, 255, 255, 0.07);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      text-align: left;
+      color: #fff;
+    }
+
+    .anime-image {
+      display: block;
+      margin: 0 auto 15px;
+      max-width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(255, 64, 129, 0.3);
+    }
+
+    .loader {
+      border: 5px solid rgba(255, 255, 255, 0.2);
+      border-top: 5px solid #ff4081;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+
+    .error {
+      color: #ff6b6b;
+      font-weight: bold;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌏 AniWorld</h1>
+    <input type="text" id="anime" placeholder="Search your favorite anime" onkeydown="if(event.key==='Enter') getAnimeInfo()">
+    <button onclick="getAnimeInfo()">🎬 Fetch Anime</button>
+    <div id="info">
+      <p>Type an anime title and hit Enter or click the button!</p>
+    </div>
+  </div>
+
+  <script>
+    async function getAnimeInfo() {
+      const animeName = document.getElementById('anime').value.trim();
+      const infoDiv = document.getElementById('info');
+
+      if (!animeName) {
+        infoDiv.innerHTML = `<p class="error">Please enter an anime name.</p>`;
+        return;
+      }
+
+      infoDiv.innerHTML = `
+        <div class="loader"></div>
+        <p style="text-align: center;">Loading anime data...</p>
+      `;
+
+      try {
+        const response = await fetch(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(animeName)}`);
+        if (!response.ok) throw new Error("API error");
+
+        const data = await response.json();
+        const anime = data.data[0];
+
+        if (!anime) throw new Error("Anime not found");
+
+        infoDiv.innerHTML = `
+          <div class="anime-card">
+            <img class="anime-image" src="${anime.images.jpg.large_image_url}" alt="${anime.title}" />
+            <h2>${anime.title}</h2>
+            <p><strong>Episodes:</strong> ${anime.episodes || 'N/A'}</p>
+            <p><strong>Status:</strong> ${anime.status || 'N/A'}</p>
+            <p><strong>Score:</strong> ${anime.score || 'N/A'}</p>
+            <p><strong>Synopsis:</strong><br>${anime.synopsis || 'No synopsis available.'}</p>
+          </div>
+        `;
+      } catch (err) {
+        infoDiv.innerHTML = `<p class="error">❌ ${err.message}</p>`;
+      }
+    }
+  </script>
+</body>
+</html>
